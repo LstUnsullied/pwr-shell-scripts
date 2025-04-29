@@ -1,0 +1,1 @@
+﻿Get-LocalUser | select-object name, enabled, lastlogon
