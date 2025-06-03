@@ -1,0 +1,8 @@
+$RestartPC = Read-host "Which pc will be restarted?"
+Write-Host "RestartPC: $RestartPC" -ForegroundColor Green -BackgroundColor Black
+Restart-Computer -ComputerName "$RestartPC" 
+if (Test-Connection -ComputerName $RestartPC -Count 1 -Quiet) {
+    Write-Output "$RestartPC is online." 
+    } else {
+    Write-Output "$RestartPC is offline."
+    }
