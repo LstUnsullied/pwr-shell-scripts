@@ -1,0 +1,8 @@
+$ShutdownPC = Read-host "Which pc will be shutdown?"
+Write-Host "ShutdownPC: $ShutdownPC" -ForegroundColor Green -BackgroundColor Black
+Stop-Computer -ComputerName "$ShutdownPC" 
+if (Test-Connection -ComputerName $ShutdownPC -Count 1 -Quiet) {
+    Write-Output "$ShutdownPC is online." 
+    } else {
+    Write-Output "$ShutdownPC is offline."
+    }
