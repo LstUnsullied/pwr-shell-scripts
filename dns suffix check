@@ -1,3 +1,7 @@
+#
+Please note that this did not work in a corp env as the rpc, and remote server methods were disabled.
+will test outside of corp network
+#
 $computerName = "RemoteComputerName"
 $dnsSuffixToFind = "yourcompany.local"
 
