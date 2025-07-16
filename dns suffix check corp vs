@@ -1,0 +1,8 @@
+$dnsSuffixToFind = "ograc.local"
+$found = Get-DnsClient |where-object { $_.ConnectionSpecificSuffix -eq $dnsSuffixToFind }
+
+if ($found) {
+    Write-Host "DNS suffix 'dnsSuffixToFind' was found."
+    } else {
+        Write-Host "DNS suffix 'dnsSuffixToFind' was not found."
+    } 
