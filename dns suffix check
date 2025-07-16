@@ -1,0 +1,7 @@
+$computerName = "RemoteComputerName"
+$dnsSuffixToFind = "yourcompany.local"
+
+Invoke-Command -ComputerName $computerName -ScriptBlock {
+    Get-DnsClient | Where-Object { $_.ConnectionSpecificSuffix -eq $using:dnsSuffixToFind } |
+    Select-Object InterfaceAlias, ConnectionSpecificSuffix
+}
