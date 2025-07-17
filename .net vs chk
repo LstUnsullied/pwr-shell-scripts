@@ -1,0 +1,1 @@
+Get-ChildItem 'HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full' -Recurse | Get-ItemPropertyValue -Name Release -EA 0
