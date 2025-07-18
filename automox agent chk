@@ -1,6 +1,9 @@
-$moxagent = Get-Service -DisplayName 'Automox Agent' 
-if ($moxagent -eq 'running') {
-    write-host "Agent Lives!"
+$moxagent = Get-Service -DisplayName 'Automox Agent'
+
+if ($moxagent.Status -eq 'Running') {
+    Write-Host "Agent Lives!"
 } else {
-    Write-Host "Agent Down!"
+    Write-Host "Agent Down! Starting service..."
+    Start-Service -DisplayName 'Automox Agent'
 }
+
