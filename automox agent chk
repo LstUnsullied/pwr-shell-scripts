@@ -1,9 +1,9 @@
+$remotepc = Read-Host -Prompt "Which PC needs to be checked?"
 $moxagent = Get-Service -DisplayName 'Automox Agent'
 
 if ($moxagent.Status -eq 'Running') {
     Write-Host "Agent Lives!"
 } else {
     Write-Host "Agent Down! Starting service..."
-    Start-Service -DisplayName 'Automox Agent'
+    start-service amagent
 }
-
