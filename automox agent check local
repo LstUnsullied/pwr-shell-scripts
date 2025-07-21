@@ -1,0 +1,20 @@
+#$moxagent will store the results of the get service command to the left of = sign
+$moxagent = Get-Service -DisplayName 'Automox Agent'
+
+#used read host to wait for user input before quitting
+if ($moxagent.Status -eq 'Running') {
+    Write-Host "Agent Lives!"
+} else {
+    start-service amagent
+    Read-Host -prompt "Agent Down! Starting service..."
+   
+    # set to 30 seconds to give service enough time to start 
+    start-sleep -seconds 30 
+
+    $moxagent = Get-Service -DisplayName 'Automox Agent'
+    if ($moxagent.Status -eq 'Running') {
+    Read-Host "Agent sucessfully started!"
+} else {
+    Read-Host -prompt "Failed to restart agent. Please check manually"
+}
+}
