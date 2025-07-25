@@ -1,0 +1,3 @@
+$CsvPath = "C:\GPO_Reports\GPO_Summary.csv"
+$GPOs = Get-GPO -All | Select-Object DisplayName, Id, Owner, CreationTime, ModificationTime, GpoStatus
+$GPOs | Export-Csv -Path $CsvPath -NoTypeInformation -Encoding UTF8
