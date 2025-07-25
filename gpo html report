@@ -1,0 +1,12 @@
+$ReportFolder = "C:\GPO_Reports"
+New-Item -ItemType Directory -Path $ReportFolder -Force
+
+Get-GPO -All | ForEach-Object {
+    $GPOName = $_.DisplayName
+
+    # Replace invalid filename characters with underscores
+    $SafeName = [RegEx]::Replace($GPOName, '[\\\/:\*\?"<>\|]', '_')
+
+    $ReportPath = Join-Path $ReportFolder "$SafeName.html"
+    Get-GPOReport -Name $GPOName -ReportType Html -Path $ReportPath
+}
