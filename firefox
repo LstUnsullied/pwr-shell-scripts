@@ -1,0 +1,66 @@
+<#
+.SYNOPSIS
+    Windows - Software - Install Mozilla Firefox
+    OS Support: Windows 10 and above
+    Required modules: NONE
+.DESCRIPTION
+    This worklet will check both 32-bit and 64-bit installations of Windows to see if
+	Mozilla Firefox is currently Installed. If Mozilla Firefox is not installed, the
+	remediation portion of this Worklet will download and install the Microsoft Installer
+	Package directly from Mozilla's website.
+.USAGE
+	.\evaluation.ps1
+
+#>
+
+$appName = "Mozilla Firefox"
+
+if ([System.Environment]::Is64BitOperatingSystem)
+{
+	$hklm64 = [Microsoft.Win32.RegistryKey]::OpenBaseKey([Microsoft.Win32.RegistryHive]::LocalMachine, [Microsoft.Win32.RegistryView]::Registry64)
+	$skey64 = $hklm64.OpenSubKey("SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\")
+	$unkeys64 = $skey64.GetSubKeyNames()
+	$hklm64.Close()
+
+	# Check for 64-bit version
+	ForEach ($key in $unkeys64)
+	{
+		If ($skey64.OpenSubKey($key).getvalue('DisplayName') -like "*$appName*")
+		{
+			Write-Output "$appName is already installed. Now exiting."
+			Exit 0
+		}
+	}
+
+	# Check for 32-bit version
+	# Define registry location for 32-bit uninstall key
+	$skey32 = 'HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall'
+
+	# Get all 32-bit entries that match the criteria
+	$unkeys32 = @(Get-ChildItem $skey32 -ErrorAction SilentlyContinue | Get-ItemProperty | Where-Object { ($_.DisplayName -like "*$appName*") })
+
+	If ($unkeys32)
+	{
+		Write-Output "$appName is already installed. Now exiting."
+		Exit 0
+	}
+
+	Write-Output "$appName was not found. Flagging for remediation."
+	Exit 1
+}
+
+# Check for install on 32-bit system
+# Define registry location for 32-bit uninstall key
+$skey32 = 'HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall'
+
+# Get all 32-bit entries that match the criteria
+$unkeys32 = @(Get-ChildItem $skey32 -ErrorAction SilentlyContinue | Get-ItemProperty | Where-Object { ($_.DisplayName -like "*$appName*") })
+
+If ($unkeys32)
+{
+	Write-Output "$appName is already installed. Now exiting."
+	Exit 0
+}
+
+Write-Output "$appName was not found. Flagging for remediation."
+Exit 1
