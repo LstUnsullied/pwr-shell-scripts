@@ -1,0 +1,164 @@
+<#
+.SYNOPSIS
+    Windows - Software - Install Mozilla Firefox
+    OS Support: Windows 10 and above
+    Required modules: NONE
+.DESCRIPTION
+    This worklet will check both 32-bit and 64-bit installations of Windows to see if
+	Mozilla Firefox is currently Installed. If Mozilla Firefox is not installed, the
+	remediation portion of this Worklet will download and install the Microsoft Installer
+	Package directly from Mozilla's website.
+
+.USAGE
+	.\remediation.ps1
+
+#>
+
+if ([System.Environment]::Is64BitOperatingSystem)
+{
+	# Using scriptblock to relaunch in native environment for 64-bit deployment.
+	$scriptBlock = {
+
+		#Predefined Variables
+		####################################################################################################
+		# Software name
+		$software64 = "Mozilla Firefox 64-bit"
+
+		# Define the path to the installer file
+		$installer64 = "MozillaFirefoxsetup.msi"
+
+		#Installation Directory
+		$scriptDir = 'C:\temp\Automox\FirefoxInstall\'
+
+		# Define the URL of the latest Firefox release
+		$url64 = "https://download.mozilla.org/?product=firefox-msi-latest-ssl&os=win64&lang=en-US"
+		####################################################################################################
+
+		Try
+		{
+			# Create the staging directory
+			New-Item -ItemType Directory -Path $scriptDir -Force | Out-Null
+
+			# Download the installer file
+			(New-Object System.Net.WebClient).DownloadFile("$url64", "$scriptDir\$installer64")
+
+			# Install Firefox 64bit
+			$processWaitTimeout = '300'
+			$proc = Start-Process -Filepath "msiexec.exe" -ArgumentList ("/i", "$scriptDir\$installer64", "/l*v", "C:\ProgramData\amagent\Firefox_install.log", "/q", "/norestart") -PassThru
+			$proc | Wait-Process -Timeout ($processWaitTimeout) -ErrorAction SilentlyContinue
+
+			if (-not ($proc.hasExited))
+			{
+				Write-Error "Installation of $software64 timed out after 5 minutes."
+				$script:fail = $true
+				$script:failCode = $processWaitTimeout
+				$proc | Stop-Process
+
+				# Remove the installer file
+				Remove-Item "$scriptDir" -Force -Recurse
+				Write-Output "See log at C:\ProgramData\amagent\Firefox_install.log for additional details."
+				Exit 1
+			}
+
+			elseif ($proc.ExitCode -ne 0 -and $proc.ExitCode -ne 3010)
+			{
+				Write-Error "Installation of $software64 failed with exit code $($proc.ExitCode)"
+				$script:failCode = $proc.ExitCode
+				$script:fail = $true
+
+				# Remove the installer file
+				Remove-Item "$scriptDir" -Force -Recurse
+				Write-Output "See log at C:\ProgramData\amagent\Firefox_install.log for additional details."
+				Exit 1
+			}
+
+			# Remove the installer file
+			Remove-Item "$scriptDir" -Force -Recurse
+
+			Write-Output "$software64 installed."
+			Exit 0
+		}
+
+		Catch
+		{
+			Write-Output "Failed to install $software64. See log at C:\ProgramData\amagent\Firefox_install.log for additional details."
+			Remove-Item "$scriptDir" -Force -Recurse
+			Exit 1
+		}
+	}
+
+	# Execution of $scriptBlock
+	& "$env:SystemRoot\sysnative\WindowsPowerShell\v1.0\powershell.exe" -ExecutionPolicy Bypass -WindowStyle Hidden -NoProfile -NonInteractive -Command $scriptblock
+}
+
+#System is 32-bit.
+else
+{
+		#Predefined Variables
+	####################################################################################################
+	# Software name
+	$software32 = "Firefox 32-bit"
+
+	# Define the path to the installer file
+	$installer32 = "Firefox32.msi"
+
+	#Creating a staging directory
+	$scriptDir = 'C:\temp\Automox\FirefoxInstall\'
+	New-Item -ItemType Directory -Path $scriptDir -Force | Out-Null
+
+	# Define the URL of the latest Firefox release
+	$url32 = "https://download.mozilla.org/?product=firefox-latest-ssl&os=win&lang=en-US"
+	####################################################################################################
+
+	Try
+	{
+		# Create the staging directory
+		New-Item -ItemType Directory -Path $scriptDir -Force | Out-Null
+
+		# Download the installer file
+		(New-Object System.Net.WebClient).DownloadFile("$url32", "$scriptDir\$installer32")
+
+		# Install Firefox 32bit
+		$processWaitTimeout = '300'
+		$proc = Start-Process -Filepath "msiexec.exe" -ArgumentList ("/i", "$scriptDir\$installer32", "/l*v", "C:\ProgramData\amagent\Firefox32_install.log", "/q", "/norestart") -PassThru
+		$proc | Wait-Process -Timeout ($processWaitTimeout) -ErrorAction SilentlyContinue
+
+		if (-not ($proc.hasExited))
+		{
+			Write-Error "Installation of $software32 timed out after 5 minutes."
+			$script:fail = $true
+			$script:failCode = $processWaitTimeout
+			$proc | Stop-Process
+
+			# Remove the installer file
+			Remove-Item "$scriptDir" -Force -Recurse
+			Write-Output "See log at C:\ProgramData\amagent\Firefox32_install.log for additional details."
+			Exit 1
+		}
+
+		elseif ($proc.ExitCode -ne 0 -and $proc.ExitCode -ne 3010)
+		{
+			Write-Error "Installation of $software32 failed with exit code $($proc.ExitCode)"
+			$script:failCode = $proc.ExitCode
+			$script:fail = $true
+
+			# Remove the installer file
+			Remove-Item "$scriptDir" -Force -Recurse
+			Write-Output "See log at C:\ProgramData\amagent\Firefox32_install.log for additional details."
+			Exit 1
+		}
+
+		# Remove the installer file
+		Remove-Item "$scriptDir" -Force -Recurse
+
+		Write-Output "$software32 installed."
+		Exit 0
+	}
+
+	Catch
+	{
+		Write-Output "Failed to install $software32. See log at C:\ProgramData\amagent\Firefox32_install.log for additional details."
+        Remove-Item "$scriptDir" -Force -Recurse
+		Exit 1
+    }
+}
