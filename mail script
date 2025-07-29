@@ -1,5 +1,5 @@
 $today = Get-Date -Format "yyyyMMdd"
-$To = "knonaka@osakagasusa.com"
+$To = "test@gmail.com"
 $Subject = "Test Mail by PowerShell sent on $today"
 $Body = "Test Message by PowerShell"
 $outlook = New-Object -Comobject Outlook.Application
