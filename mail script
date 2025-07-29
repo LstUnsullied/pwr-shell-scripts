@@ -1,0 +1,11 @@
+$today = Get-Date -Format "yyyyMMdd"
+$To = "knonaka@osakagasusa.com"
+$Subject = "Test Mail by PowerShell sent on $today"
+$Body = "Test Message by PowerShell"
+$outlook = New-Object -Comobject Outlook.Application
+$mail = $Outlook.CreateItem(0)
+$mail.To = $To
+$mail.Subject = $Subject
+$mail.Body = $Body
+$mail.Send()
+$mail = $null
