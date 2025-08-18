@@ -1,0 +1,4 @@
+Get-WmiObject -Class Win32_Product | Select-Object -Property Name
+
+#gets all apps with details #
+Get-AppxPackage -AllUsers
