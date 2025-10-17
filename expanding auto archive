@@ -1,0 +1,15 @@
+#commands to install and import the exchangeonline cmdlet#
+Install-Module exchangeonlinemanagement -Force  
+Import-Module ExchangeOnlineManagement 
+
+#connect to exchangeonline please use acct info with correct priviliges#
+Connect-ExchangeOnline -UserPrincipalName admin@osakagasusa.com
+
+# if archive is not enabled already use the following command: Enable-Mailbox -Identity user@yourdomain.com -Archive#
+
+Enable-Mailbox -Identity Anumber@osakagasusa.com -AutoExpandingArchive
+
+#statement to check for autoarchive is working, is true it was enabled#
+Get-Mailbox -Identity Anumber@osakagasusa.com | FL AutoExpandingArchiveEnabled
+
+Disconnect-ExchangeOnline
