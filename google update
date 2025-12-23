@@ -1,0 +1,35 @@
+<#
+   GGGGG
+  G
+ G   GGG
+ G     G
+  GGGGG
+
+Author: Jeremy Malone
+Version: 6
+Synopsis: pull latest chrome downloaded from chromes site, 
+compare versions with currently installed chrome and close chrome install latest version and reinstall if needed. 
+#>
+
+#download latest chrome exe#
+$chromedwnld = "https://dl.google.com/chrome/install/latest/chrome_installer.exe"
+$downloadfldr = Join-Path -Path "$env:Temp" -ChildPath "ChromeSetup.exe"
+
+Invoke-WebRequest -Uri $chromedwnld -OutFile $downloadfldr -ErrorAction Stop
+
+[version]$fileversion = (Get-Item $downloadfldr).VersionInfo.ProductVersion
+[version]$currentversion = (Get-ItemProperty -Path "HKCU:\Software\Google\Chrome\BLBeacon").version
+
+$currentversion
+
+if ($currentversion -and ($fileversion -gt $currentversion))
+ {
+   Start-Process -FilePath "taskkill.exe" -ArgumentList "/IM chrome.exe /F" -NoNewWindow -Wait
+    Write-Host "Chrome is shutting down for an update. Please wait a moment."
+    Start-Process -FilePath $downloadfldr -ArgumentList "/quiet" -Wait
+    Start-Process "Chrome.exe" 
+   
+ }
+    else {
+        Write-Host "Latest version is currently installed."
+    }
