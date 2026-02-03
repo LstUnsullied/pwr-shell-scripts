@@ -1,0 +1,38 @@
+<#
+  ___   ____      _             _ _ _     _ 
+ / _ \ / ___|    / \  _   _  __| (_) |_  | |
+| | | | |       / _ \| | | |/ _` | | __| | |
+| |_| | |___   / ___ \ |_| | (_| | | |_  |_|
+ \__\_\\____| /_/   \_\__,_|\__,_|_|\__| (_)
+
+ This is for the end of the qc to audit software that was installed for a new user prior to user assignment. 
+ Jeremy Malone
+#>
+# Install-Module -Name ImportExcel -Scope CurrentUser   # Run once if not installed
+Import-Module ImportExcel -Scope Local
+
+$PCname  = $env:COMPUTERNAME
+$lstuser = (Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Authentication\LogonUI").LastLoggedOnDisplayName
+
+$pathdir = "C:\QC Reports"
+if (-not (Test-Path $pathdir)) {
+    New-Item -ItemType Directory -Path $pathdir | Out-Null
+}
+
+$invalid   = [IO.Path]::GetInvalidFileNameChars() -join ''
+$regex     = "[{0}]" -f [Regex]::Escape($invalid)
+$safeUser  = ($lstuser -replace $regex, '_')
+if ([string]::IsNullOrWhiteSpace($safeUser)) { $safeUser = 'UnknownUser' }
+
+$path = Join-Path $pathdir "$PCname _${safeUser} -copy.xlsx"
+
+$installedsoft = Get-ItemProperty @(
+    "HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*",
+    "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*"
+) |
+    Where-Object { $_.DisplayName } |
+    Select-Object DisplayName, DisplayVersion, InstallDate
+
+$installedsoft |
+    Export-Excel -Path $path -AutoSize -AutoFilter -TableStyle Light8 -BoldTopRow -FreezeTopRow -Show
+Write-Host "Export complete: $path"
