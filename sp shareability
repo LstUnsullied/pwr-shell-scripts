@@ -1,0 +1,39 @@
+#Install-Module Pnp.Powershell#
+Import-Module PnP.PowerShell
+#Update-Module Pnp.Powershell#
+#Install-Module -Name ImportExcel#
+Import-Module -Name ImportExcel
+
+$loginurl = "https://ograc-admin.sharepoint.com"
+Connect-PnPOnline -Url "$loginurl" -Interactive -ClientId "143c4418-1086-4bf0-885b-7df95ff6316a"
+
+
+$folderloc = "C:\SPReports"
+
+    if(-not (Test-Path -Path $folderloc)){
+        New-Item -ItemType Directory -Path $folderloc -Force
+    }
+
+$xlsxpath = Join-Path $folderloc "SP_Sharing.xlsx"
+$sitewide = Get-PnPTenantSite -Detailed 
+
+$sharingdef = @{
+    'ExternalUserAndGuestSharing' = 'Anyone'
+    'ExternalUserSharingOnly' = 'New and existing guests'
+    'ExistingExternalUserSharingOnly' = 'Existing guests only'
+    'Disabled' = 'Only people in your organization'
+}
+
+$allsps = $sitewide | ForEach-Object{
+    $pure = $_.SharingCapability.ToString()
+    [PSCustomObject]@{
+        Title = $_.Title
+        Url = $_.Url
+        SharingCapabilityPure = $pure
+        SharingCapability = $sharingdef[$pure]
+    }
+}
+
+$bdsetting = $allsps | Where-Object { $_.SharingCapability -ne 'Disabled'}
+
+$bdsetting | Export-Excel -Path $xlsxpath -WorksheetName 'Share' -AutoSize -FreezeTopRow -AutoFilter -ClearSheet
