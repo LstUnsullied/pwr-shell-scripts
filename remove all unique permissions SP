@@ -1,0 +1,14 @@
+Import-Module PnP.PowerShell -Scope Local
+
+$siteurl = Read-Host "Enter the SharePoint site URL"
+Connect-PnPOnline -Url $siteurl -Interactive -ClientId "143c4418-1086-4bf0-885b-7df95ff6316a"
+$listname =Read-Host "Name the libary for remidiation" 
+$context = Get-PnPContext
+
+$items = Get-PnPListItem -List $listname
+foreach ($item in $items)
+{
+    $item.ResetRoleInheritance()
+    $item.update()
+    $context.ExecuteQuery()
+}
